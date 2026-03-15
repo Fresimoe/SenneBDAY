@@ -10,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors({
-  origin: 'https://marvelous-peace.up.railway.app',
+  origin: 'https://marvelous-peace-production-c021.up.railway.app',
   credentials: true
 }));
 app.use(express.json());
