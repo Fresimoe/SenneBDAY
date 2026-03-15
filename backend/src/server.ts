@@ -9,7 +9,10 @@ import { requireAuth, requireAdmin } from './middlewares/auth';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://marvelous-peace.up.railway.app',
+  credentials: true
+}));
 app.use(express.json());
 
 // Auth routes
