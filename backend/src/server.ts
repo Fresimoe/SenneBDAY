@@ -17,15 +17,7 @@ const allowedOrigins = [
 ].filter(Boolean) as string[];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Fallback for debugging, allow all for now to solve the user's immediate issue
-    }
-  },
+  origin: true,
   credentials: true
 }));
 app.use(express.json());
@@ -56,6 +48,25 @@ app.post('/api/availability', requireAuth, toggleAvailability);
 // Admin settings
 app.put('/api/admin/pin', requireAuth, requireAdmin, changeAdminPin);
 
+// Global Error Handler (must be last)
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error('SERVER ERROR:', err);
+  // Ensure CORS headers are present even on errors
+  res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  res.status(err.status || 500).json({ 
+    error: 'Internal Server Error', 
+    message: err.message,
+    path: req.path
+  });
+});
+
 app.listen(PORT, () => {
+  console.log(`--- SERVER STARTING ---`);
   console.log(`Server running on port ${PORT}`);
+  console.log(`Allowed Origins: Always allowed (origin: true)`);
+  console.log(`------------------------`);
 });
