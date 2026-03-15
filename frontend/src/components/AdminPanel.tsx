@@ -88,9 +88,9 @@ const AdminPanel: FC = () => {
         fetchApi('/periods'),
         fetchApi('/availability')
       ]);
-      setMembers(m);
-      setPeriods(p.sort((a: Period, b: Period) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()));
-      setAvailability(a);
+      setMembers(m || []);
+      setPeriods((p || []).sort((a: Period, b: Period) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()));
+      setAvailability(a || []);
     } catch (err: any) {
       showMessage(err.message || 'Failed to load data', true);
     } finally {
@@ -227,7 +227,8 @@ const AdminPanel: FC = () => {
           <h2 className="text-base font-semibold text-gray-800 mb-4">🏆 Best 3 moments</h2>
           {(() => {
             const byDate: Record<string, { date: Date; members: Member[] }> = {};
-            for (const entry of availability) {
+            for (const entry of (availability || [])) {
+              if (!entry || !entry.date || !entry.member) continue;
               const key = entry.date.substring(0, 10);
               if (!byDate[key]) {
                 byDate[key] = { date: new Date(entry.date), members: [] };
@@ -248,7 +249,8 @@ const AdminPanel: FC = () => {
             return (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {sorted.map(([key, { date, members: m }], i) => {
-                  const pct = members.length > 0 ? Math.round((m.length / members.length) * 100) : 0;
+                  const totalMembers = (members || []).length;
+                  const pct = totalMembers > 0 ? Math.round((m.length / totalMembers) * 100) : 0;
                   return (
                     <div key={key} className="bg-gray-50 border border-gray-100 rounded-lg p-3 space-y-2">
                       <div className="flex items-center justify-between">

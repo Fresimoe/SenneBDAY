@@ -1,7 +1,11 @@
-const API_URL = import.meta.env.VITE_API_URL || 
+const rawApiUrl = import.meta.env.VITE_API_URL || 
   (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api' 
     : 'https://sennebday.up.railway.app/api');
+
+// Ensure protocol is present
+const API_URL = rawApiUrl.startsWith('http') ? rawApiUrl : `https://${rawApiUrl}`;
+
 console.log('Using API_URL:', API_URL);
 
 export const getAuthHeaders = (): Record<string, string> => {
@@ -27,5 +31,6 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     throw new Error(data?.error || `API error: ${response.status}`);
   }
 
-  return data;
+  // Fallback to empty array if data is null (common for list endpoints)
+  return data ?? [];
 };

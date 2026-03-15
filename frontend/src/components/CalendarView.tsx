@@ -66,15 +66,15 @@ const CalendarView: FC = () => {
         fetchApi('/members'),
         fetchApi('/availability'),
       ]);
-      setPeriods(p);
-      setMembers(m);
-      setAvailability(a);
+      setPeriods(p || []);
+      setMembers(m || []);
+      setAvailability(a || []);
 
       // Navigate to first active/upcoming period
-      const relevant = p
+      const relevant = (p || [])
         .filter((per: Period) => getStatus(per) !== 'past')
         .sort((a: Period, b: Period) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-      if (relevant.length > 0) {
+      if (relevant && relevant.length > 0) {
         setCurrentDate(new Date(relevant[0].startDate));
       }
     } catch (err) {
