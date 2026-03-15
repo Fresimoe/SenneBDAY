@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        Int    @id @default(autoincrement())
+  pinHash   String
+}
+
+model Member {
+  id           Int            @id @default(autoincrement())
+  name         String         @unique
+  color        String
+  pinHash      String
+  availability Availability[]
+}
+
+model Period {
+  id        Int      @id @default(autoincrement())
+  startDate DateTime
+  endDate   DateTime
+}
+
+model Availability {
+  id       Int      @id @default(autoincrement())
+  member   Member   @relation(fields: [memberId], references: [id])
+  memberId Int
+  date     DateTime
+
+  @@unique([memberId, date])
+}
