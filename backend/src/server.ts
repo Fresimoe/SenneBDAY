@@ -9,17 +9,17 @@ import { requireAuth, requireAdmin } from './middlewares/auth';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5000',
-  process.env.FRONTEND_URL,
-  'https://marvelous-peace-production-c021.up.railway.app'
-].filter(Boolean) as string[];
-
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+// Nuclear CORS middleware (placed before other routes)
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
 app.use(express.json());
 
 // Health check
