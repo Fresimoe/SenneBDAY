@@ -21,12 +21,19 @@ interface AvailabilityEntry {
   member: Member;
 }
 
+const toDateKey = (value: string | Date): string => {
+  if (typeof value === 'string') {
+    return value.slice(0, 10);
+  }
+  return format(value, 'yyyy-MM-dd');
+};
+
 const getStatus = (period: Period): 'active' | 'planned' | 'past' => {
-  const now = new Date();
-  const start = new Date(period.startDate);
-  const end = new Date(period.endDate);
-  if (now > end) return 'past';
-  if (now >= start) return 'active';
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const startKey = toDateKey(period.startDate);
+  const endKey = toDateKey(period.endDate);
+  if (todayKey > endKey) return 'past';
+  if (todayKey >= startKey && todayKey <= endKey) return 'active';
   return 'planned';
 };
 

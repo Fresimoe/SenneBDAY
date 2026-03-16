@@ -10,7 +10,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/calendar" element={<CalendarView />} />cursus
+          <Route path="/calendar" element={<CalendarView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

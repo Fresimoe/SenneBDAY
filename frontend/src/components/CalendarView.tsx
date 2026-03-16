@@ -33,12 +33,19 @@ interface AvailabilityEntry {
   member: Member;
 }
 
+const toDateKey = (value: string | Date): string => {
+  if (typeof value === 'string') {
+    return value.slice(0, 10);
+  }
+  return format(value, 'yyyy-MM-dd');
+};
+
 const getStatus = (period: Period): 'active' | 'planned' | 'past' => {
-  const now = new Date();
-  const start = new Date(period.startDate);
-  const end = new Date(period.endDate);
-  if (now > end) return 'past';
-  if (now >= start && now <= end) return 'active';
+  const todayKey = format(new Date(), 'yyyy-MM-dd');
+  const startKey = toDateKey(period.startDate);
+  const endKey = toDateKey(period.endDate);
+  if (todayKey > endKey) return 'past';
+  if (todayKey >= startKey && todayKey <= endKey) return 'active';
   return 'planned';
 };
 
@@ -59,7 +66,7 @@ const CalendarView: FC = () => {
     navigate('/');
   };
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (focusRelevantPeriod = false) => {
     try {
       const [p, m, a] = await Promise.all([
         fetchApi('/periods'),
@@ -71,11 +78,13 @@ const CalendarView: FC = () => {
       setAvailability(a || []);
 
       // Navigate to first active/upcoming period
-      const relevant = (p || [])
-        .filter((per: Period) => getStatus(per) !== 'past')
-        .sort((a: Period, b: Period) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-      if (relevant && relevant.length > 0) {
-        setCurrentDate(new Date(relevant[0].startDate));
+      if (focusRelevantPeriod) {
+        const relevant = (p || [])
+          .filter((per: Period) => getStatus(per) !== 'past')
+          .sort((a: Period, b: Period) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+        if (relevant && relevant.length > 0) {
+          setCurrentDate(new Date(relevant[0].startDate));
+        }
       }
     } catch (err) {
       console.error(err);
@@ -86,16 +95,15 @@ const CalendarView: FC = () => {
 
   useEffect(() => {
     if (!memberId) { navigate('/'); return; }
-    loadData();
+    loadData(true);
   }, [memberId, navigate, loadData]);
 
   const isDayInPeriod = (day: Date): Period | null => {
+    const dayKey = format(day, 'yyyy-MM-dd');
     return periods.find((p) => {
-      const start = new Date(p.startDate);
-      start.setUTCHours(0, 0, 0, 0);
-      const end = new Date(p.endDate);
-      end.setUTCHours(23, 59, 59, 999);
-      return day >= start && day <= end;
+      const startKey = toDateKey(p.startDate);
+      const endKey = toDateKey(p.endDate);
+      return dayKey >= startKey && dayKey <= endKey;
     }) || null;
   };
 
@@ -122,7 +130,7 @@ const CalendarView: FC = () => {
         method: 'POST',
         body: JSON.stringify({ date: dateStr }),
       });
-      await loadData();
+      await loadData(false);
     } catch (err) {
       console.error(err);
     } finally {
